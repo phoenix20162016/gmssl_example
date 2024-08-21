@@ -1,0 +1,24 @@
+load("@rules_foreign_cc//foreign_cc:defs.bzl", "cmake")
+
+filegroup(
+  name = "src",
+  srcs = glob(["**"]),
+  visibility = ["//visibility:public"]
+)
+
+cmake(
+  name = "gmssl",
+  cache_entries = {
+    "CMAKE_INSTALL_LIBDIR": "lib",
+  },
+  build_args = [
+    "-j4",
+  ],
+  lib_source = ":src",
+  out_shared_libs = [
+    "libgmssl.so",
+    "libgmssl.so.3",
+    "libgmssl.so.3.1"
+  ],
+  visibility = ["//visibility:public"],
+)
