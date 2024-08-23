@@ -5,3 +5,11 @@ cc_binary(
     "@gmssl//:gmssl",
   ],
 )
+
+cc_binary(
+  name = "sm4_main",
+  srcs = ["demo_sm4_cbc.cc"],
+  deps = [
+    "@gmssl//:gmssl",
+  ],
+)
