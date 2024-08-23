@@ -17,3 +17,13 @@ new_git_repository(
   remote = "https://gitee.com/mirrors/GmSSL.git",
   branch = "master"
 )
+
+http_archive(
+  name = "fmtlib",
+  sha256 = "6cb1e6d37bdcb756dbbe59be438790db409cdb4868c66e888d5df9f13f7c027f",
+  strip_prefix = "fmt-11.0.2",
+  build_file = "//bazel:BUILD.fmtlib",
+  urls = [
+    "https://primihub.oss-cn-beijing.aliyuncs.com/tools/fmt-11.0.2.tar.gz",
+  ]
+)

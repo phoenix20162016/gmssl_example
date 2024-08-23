@@ -5,6 +5,9 @@
 #include <gmssl/error.h>
 #include <string>
 #include <iostream>
+#include "util/log.h"
+#include "fmt/format.h"
+
 void generate_data(std::string& plain_text_data, size_t data_size) {
   plain_text_data.reserve(data_size);
   for (size_t i = 0; i < data_size; i++) {
@@ -41,8 +44,8 @@ int main(void) {
   generate_data(plain_text_data, plain_data_size);
   std::string ciphertext_data;
 
-  std::cout << "SM2_MAX_PLAINTEXT_SIZE: " << SM2_MAX_PLAINTEXT_SIZE << "\n";
-  std::cout << "SM2_MAX_CIPHERTEXT_SIZE: " << SM2_MAX_CIPHERTEXT_SIZE << "\n";
+  LOG(INFO) << "SM2_MAX_PLAINTEXT_SIZE: " << SM2_MAX_PLAINTEXT_SIZE << "\n";
+  LOG(INFO) << "SM2_MAX_CIPHERTEXT_SIZE: " << SM2_MAX_CIPHERTEXT_SIZE << "\n";
   uint8_t* plain_ptr = reinterpret_cast<uint8_t*>(&plain_text_data[0]);
   const int block_size = SM2_MAX_PLAINTEXT_SIZE;
   int block_num = plain_text_data.size() / block_size;
@@ -54,10 +57,10 @@ int main(void) {
     int offset = i * block_size;
     int ret = sm2_encrypt(&pub_key, plain_ptr + offset, block_size, ciphertext, &len);
     if (ret != 1) {
-      std::cout << "sm2_encrypt failed\n";
+      LOG(ERROR) << "sm2_encrypt failed\n";
       return -1;
     }
-    std::cout << "SM2_MAX_PLAINTEXT_SIZE: cipher text size: " << len << "\n";
+    LOG(INFO) << "SM2_MAX_PLAINTEXT_SIZE: cipher text size: " << len << "\n";
     ciphertext_data.append(reinterpret_cast<char*>(&len), sizeof(len));
     ciphertext_data.append(reinterpret_cast<char*>(ciphertext), len);
   }
@@ -66,30 +69,29 @@ int main(void) {
     int offset = block_num * block_size;
     int ret = sm2_encrypt(&pub_key, plain_ptr + offset, rem, ciphertext, &len);
     if (ret != 1) {
-      std::cout << "sm2_encrypt failed\n";
+      LOG(ERROR) << "sm2_encrypt failed\n";
       return -1;
     }
-    std::cout << "rem: cipher text size: " << len << "\n";
+    LOG(INFO) << "rem: cipher text size: " << len << "\n";
     ciphertext_data.append(reinterpret_cast<char*>(&len), sizeof(len));
     ciphertext_data.append(reinterpret_cast<char*>(ciphertext), len);
   }
 
-	// format_bytes(stdout, 0, 0, "ciphertext", ciphertext, len);
   size_t index = 0;
   auto ptr_base = (uint8_t*)(&ciphertext_data[0]);
   uint8_t* ptr_offset = ptr_base;
   while (index < ciphertext_data.size()) {
     auto cipher_len = reinterpret_cast<size_t*>(ptr_offset);
     index += sizeof(size_t);
-    std::cout << "block size: " << *cipher_len << "\n";
+    LOG(INFO) << "block size: " << *cipher_len << "\n";
     ptr_offset += sizeof(size_t);
     int ret = sm2_decrypt(&sm2_key, ptr_offset, *cipher_len, plaintext, &len);
     if (ret != 1) {
-      fprintf(stderr, "error\n");
+      LOG(ERROR) << "error\n";
 		  return 1;
     } else {
       plaintext[len] = '\0';
-	    printf("plaintext: %s\n", plaintext);
+	    LOG(INFO) << "plaintext: " << plaintext << "\n";
     }
     ptr_offset += *cipher_len;
     index += *cipher_len;
